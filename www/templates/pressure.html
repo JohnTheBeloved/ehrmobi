@@ -1,18 +1,31 @@
-<ion-content ng-class="{expanded:false}">
-    <div class=" hero slide-up" style="background-image: url('http://diabeteswell.com/wp-content/uploads/2014/11/accuracy-of-wrist-blood-pressure-monitors-300x200.jpg'); height: 150px;">
-        <div class="content">
-            <div class="avatar" style="background-image: url('img/arya.jpg'); "></div>
-            <h3><a class="light">Blood Glucose</a></h3>
-            <h4>{{dragon_mommy}}</h4>
+<ion-view view-title="Blood Pressure" ng-controller="PressureCtrl">
+    <ion-content ng-class="{expanded:false}">
+        <div class="hero slide-up" style="background-image: url('/img/pressure_bg.jpg'); height: 150px;">
+            <div class="content">
+                <div class="avatar" style="background-image: url('img/arya.jpg'); "></div>
+                <h3><a class="light">Blood Glucose</a></h3>
+                <h4>{{dragon_mommy}}</h4>
+            </div>
         </div>
-    </div>
-    <h4 class="content padding double-padding-x">Following</h4>
-    <div class="list ">
-        <a ui-sref="app.friends" class="item item-avatar item-icon-right">
-            <img src="img/jon-snow.jpg">
-            <h2>Blood Glucose </h2>
-            <p>You took your blood glucose Today @ 11:00am, it measured 20mg/dl</p>
-            <i class="icon ion-ios-loop-strong"></i>
-        </a>
-    </div>
-</ion-content>
+        <div class="list">
+            <div class="item item-icon-right">
+                <h2>Blood Glucose Observations</h2>
+                <button class="button button-small button-positive" ng-click="syncPressures()">
+                    <i class="icon ion-android-sync"></i>
+                </button>
+            </div>
+            <div ng-repeat="pressure in pressures"  class="item " style="padding: 0px;">
+                <div class="row">
+                    <div>
+                        <img style="width: 100%;" src="img/glucose.png">
+                    </div>
+                    <div style=" width: 100%;">
+                        <h2>{{timeString(pressure.time)}}</h2>
+                        <p>Personal Observation</p>
+                        <i  position: relative;" class="subdued pull-right">{{pressure.systole}}/{{pressure.diastole}}mg/dl</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

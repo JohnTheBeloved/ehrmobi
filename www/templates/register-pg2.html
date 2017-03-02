@@ -1,20 +1,41 @@
-<ion-view view-title="Register -> Login Details">
+<ion-view  class="background"  view-title="Register -> Login Details">
+  <ion-header-bar class="bar bar-header bar-positive">
+      <h1 class="title">User Setup</h1>
+  </ion-header-bar>
   <ion-content ng-class="{expanded:$scope.isExpanded}">
+    <h4 style="text-align: center;">Network Details</h4>
     <div class="list">
-      <div class="list">
+      <form  name="patientForm2" novalidate="" ng-submit="savePage2(patientForm2)">
         <label class="item item-input item-divider">
-          <input type="email" placeholder="Email">
+          <input name="phone" type="text" ng-model="patient.phone" placeholder="Mobile Number" ng-minlength="5" ng-maxlength="20" required>
         </label>
+        <div class="error-container" ng-show="patientForm2.phone.$error && patientForm2.phone.$dirty" ng-messages="patientForm2.phone.$error">
+            <div ng-messages-include="/templates/error-list.html"></div>
+        </div>
         <label class="item item-input item-divider">
-          <input type="number" placeholder="Mobile Number">
+          <input name="password" type="password" ng-model="patient.password" placeholder="Password" ng-minlength="5" ng-maxlength="20" required>
         </label>
+        <div class="error-container" ng-show="patientForm2.password.$error && patientForm2.password.$dirty" ng-messages="patientForm2.password.$error">
+            <div ng-messages-include="/templates/error-list.html"></div>
+        </div>
         <label class="item item-input item-divider">
-          <input type="text" placeholder="Password">
+          <input name="confirmPassword" type="password" ng-model="patient.confirmPassword" placeholder="Password Again" required compare-to="patient.password" >
         </label>
-        <button class="button button-full button-positive">
-          Complete Registration 
+        <div class="error-container" ng-show="patientForm2.confirmPassword.$error && patientForm2.confirmPassword.$dirty" ng-messages="patientForm2.compareTo.$error">
+            <div ng-messages-include="/templates/error-list.html"></div>
+        </div>
+        <label class="item item-input item-select item-divider">
+          Data Provider:
+          <select ng-model="patient.syncLocation" style="background: transparent;">
+            <option>Standalone Local</option>
+            <option selected>OpenMRS Local</option>
+            <option>OpenMRS Remote</option>
+          </select>
+        </label>
+        <button type="submit" class="button button-full button-positive">
+          Complete Setup 
         </button>
-      </div>
+      </form>
     </div>
   </ion-content>
 </ion-view>

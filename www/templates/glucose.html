@@ -1,6 +1,6 @@
-<ion-view view-title="Blood Glucose">
+<ion-view view-title="Blood Glucose" ng-controller="GlucoseCtrl">
     <ion-content ng-class="{expanded:false}">
-        <div class=" hero slide-up" style="background-image: url('http://www.getholistichealth.com/wp-content/uploads/2012/09/20090225_blood_test.jpg');  height: 150px;">
+        <div class=" hero slide-up" style="background-image: url('/img/glucose_bg.jpg');  height: 150px;">
             <div class="content">
                 <div class="avatar" style="background-image: url('img/arya.jpg');"></div>
                 <h3><a class="light">Blood Glucose</a></h3>
@@ -8,32 +8,25 @@
             </div>
         </div> 
         <div class="list">
-            <label class="item item-icon-right">
-                <h4>Records</h4>
-                <i class="icon ion-android-sync"></i>
-
-            </label>
-            <label class="item item-input ">
-                <div class="input-label">
-                  From: 22/12/2009
-                </div>
-                <div class="input-label">
-                  To: 22/12/2009
-                </div>
-            </label>
-            <a ui-sref="app.friends" class="item item-divide" style="padding: 0px;">
+            <div class="item item-icon-right">
+                <h2>Blood Glucose Observations</h2>
+                <button class="button button-small button-positive" ng-click="syncGlucoses()">
+                    <i class="icon ion-android-sync"></i>
+                </button>
+            </div>
+            <div ng-repeat="glucose in glucoses" class="item " style="padding: 0px;">
                 <div class="row">
-                    <div class="col col-33">
-                        <img style="width: 100%;" src="img/jon-snow.jpg">
+                    <div>
+                        <img style="width: 100%;" src="img/glucose.png">
                     </div>
-                    <div class="col col-66">
-                        <h2>Personal Measurement</h2>
-                        <p>20mg/dl</p>
-                        <i style="bottom: -20px; position: relative;" class="subdued pull-right">22/02/2009 11:00:09 am</i>
+                    <div style=" width: 100%;">
+                        <h2>{{timeString(glucose.time)}}</h2>
+                        <p>Personal Measurement</p>
+                        <i  position: relative;" class="subdued pull-right">{{glucose.value}}mg/dl</i>
                     </div>
                 </div>
                 
-            </a>
+            </div>
             
             
         </div>

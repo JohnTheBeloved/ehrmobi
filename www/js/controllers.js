@@ -1,21 +1,150 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope) {})
+.controller('HomeCtrl', function(){
 
-.controller('ChatsCtrl', function($scope, Chats) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  };
 })
+
+.controller('LocationCtrl', function($scope,AuthService,DataFactory,RegistrationService){
+    $scope.syncData = function(){
+        AuthService.personLoggedIn()
+        .then(function(patient){
+            if(patient && !patient.uuid){
+                RegistrationService.registerPatient(patient);
+            }
+        })
+    
+    }
+})
+
+.controller('DashCtrl', function($scope,AuthService,DataFactory, $ionicPopup,$ionicLoading) {
+
+    var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;
+ 
+    $scope.popupData = {};
+    
+    $scope.patient = {};
+    loading();
+    AuthService.personLoggedIn()
+    .then(function(patient){
+        $scope.patient = patient;
+       
+        $scope.patient.alerts = [
+
+            {
+                message:"You have not checked your Blood pressure for the past 5 days",
+                time:new Date()
+            }
+        ];
+        loaded();
+    })
+
+   
+
+    $scope.addGlucose = function(){
+        $scope.popupData.glucose = 0;
+        askAlert($scope,'Blood Glucose',
+            'Please, measure and enter blood glucose value (unit is in mg/dl)',
+            '<input type="number" ng-model="popupData.glucose">',
+            function(e){
+                if(!$scope.popupData.glucose){
+                    e.preventDefault();
+                }else{
+                    $scope.patient.glucoses.push({value:$scope.popupData.glucose,time:new Date()});
+                    DataFactory.appendProperty($scope.patient.email,"glucoses",$scope.patient.glucoses);
+                    $scope.reloadPatient();
+                }
+            });
+    };
+
+    $scope.reloadPatient = function(){
+        DataFactory.retrieve($scope.patient.email)
+        .then(function(patient){
+            if(patient){
+                $scope.patient = patient;
+                console.log(patient)
+            }
+        });
+    }
+
+    $scope.addPressure = function(){
+        $scope.popupData.pressureSystole = 0;
+        $scope.popupData.pressureDiastole = 0;
+        var ppp = askAlert($scope,'Blood Pressure',
+            'Please, measure and record blood pressure value (unit is in mmhg)',
+            '<input type="number" ng-model="popupData.pressureSystole" placeholder="Enter Systole"><input type="number" ng-model="popupData.pressureDiastole" placeholder=" Enter Diastole">',
+            function(e){
+                if(!($scope.popupData.pressureSystole && $scope.popupData.pressureDiastole)){
+                    e.preventDefault();
+                }else{
+                    $scope.patient.pressures.push(
+                        {
+                            systole: $scope.popupData.pressureSystole,
+                            diastole: $scope.popupData.pressureDiastole,
+                            time: new Date()
+                        }
+                    );
+                    DataFactory.appendProperty($scope.patient.email,"pressures",$scope.patient.pressures);
+                    $scope.reloadPatient();
+                }
+            });
+    }
+
+
+})
+
+.controller('GlucoseCtrl', function($scope,AuthService) {
+   var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;
+ 
+
+    $scope.syncGlucoses = function(){
+        loading();
+        AuthService.personLoggedIn()
+        .then(function(patient){
+            $scope.glucoses = patient.glucoses;
+            loaded();
+        });
+    }
+
+    $scope.timeString = function(timeStringIn){
+        var time = new Date(timeStringIn)
+        return time.toDateString() + " " + time.toLocaleTimeString();
+    }
+
+    $scope.syncGlucoses();
+    
+})
+
+
+.controller('PressureCtrl', function($scope,AuthService) {
+    var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;    
+
+    $scope.syncPressures = function(){
+        loading();
+        AuthService.personLoggedIn()
+        .then(function(patient){
+            $scope.pressures = patient.pressures;
+            loaded();
+        });
+    }
+
+    $scope.timeString = function(timeStringIn){
+        var time = new Date(timeStringIn)
+        return time.toDateString() + " " + time.toLocaleTimeString();
+    }
+
+    $scope.syncPressures();
+    
+})
+
 
 
 .controller('NavCtrl', function($scope,MrsService, $ionicSideMenuDelegate) {
@@ -23,45 +152,52 @@ angular.module('starter.controllers', [])
         $ionicSideMenuDelegate.toggleLeft();
       };
 })
-
-.controller('ProfileCtrl', function($scope, $stateParams, Chats) {
-  
-})
-
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
-})
-
-.controller('RegisterCtrl', function($scope,DataFactory,$ionicPopup,$ionicLoading) {
-    $scope.patient = {
-        firstName:'',
-        lastName:'',
-        middleName:'',
-        email:'',
-        gender:'M',
-        dateOfBirth:'',
-        picture:'',
-        weight:'',
-        height:''
+ 
+.controller('RegisterCtrl', function($scope,$state,$stateParams,DataFactory,AuthService) {
+    
+    var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;
+    
+    var goToReg2 = function(){
+        $state.go('auth.register2',{email:$scope.patient.email});
     }
 
-    var showAlert = function(message) {
-       var alertPopup = $ionicPopup.alert({
-         title: 'Message',
-         template: message
-       });
- 
-     };
+    var goToDashboard = function(){
+        $state.go('tab.home')
+    }
 
-    var loading = function() {
-        $ionicLoading.show({
-          template: '<p>Please wait...</p><ion-spinner></ion-spinner>'
+    var email = $stateParams.email; 
+    if(email){
+        loading();
+        DataFactory.retrieve(email)
+        .then(function(patient){
+            if(patient && patient.email){
+                $scope.patient = patient;
+                loaded();
+            }else{
+                loaded("Error occured retriving saved Data, Please Start again",function(){$state.go('auth.register')})
+            }
         });
-    };
-
-    var loaded  = function(){
-        $ionicLoading.hide();
-    };
+    }else{
+         $scope.patient = {
+            firstName:'',
+            lastName:'',
+            middleName:'',
+            email:'',
+            gender:'M',
+            dateOfBirth:'',
+            picture:'',
+            weight:'',
+            height:'',
+            password:'',
+            confirmPassword:'',
+            pressures:[],
+            glucoses:[],
+            alerts:[]
+        }
+    }
 
     $scope.savePage1 = function(form) {
         
@@ -69,200 +205,164 @@ angular.module('starter.controllers', [])
             loading();
             DataFactory.save($scope.patient.email,$scope.patient)
             .then(function(){
-                loaded();
-                showAlert('<b>Success</b>: Basic Data Successfully saved')
+                loaded('<b>Success</b>: Basic Data Successfully saved',goToReg2);
             });
         }else{
             showAlert("Form Data not Valid, Please review")
         }
-      };
+    };
 
-   $scope.savePage11 = function(){
-        // An elaborate, custom popup
-        var patient = DataFactory.getPatientStub($scope.firstName,$scope.lastName,
-                $scope.dateOfBirth,$scope.gender,$scope.email,$scope.phone,$scope.password
-            );
-
-        console.log("About to save Data...",patient);
-        var key = new Date().getTime();
-        DataFactory.save(key,patient)
-        .then(function(){})
-        DataFactory.retrieve(key)
-        .then(function(data){console.log('Logged data',data)})
-
-   }
+    $scope.savePage2 = function(form) {
+        
+        if(form.$valid) {
+            loading();
+            DataFactory.save($scope.patient.email,$scope.patient)
+            .then(function(){
+                AuthService.keepLogin($scope.patient.email,$scope.patient.password).then(function(){
+                    loaded('<b>Success</b>: Basic Information Registered',goToDashboard);
+                });                
+            });
+        }else{
+            showAlert("Form Data not Valid, Please review")
+        }
+    };
 
 })
 
 
-.controller('AppCtrl', function($scope, $ionicModal, $ionicPopover, $timeout) {
+.controller('AppCtrl', function($scope, $ionicModal) {
     // Form data for the login modal
-    $scope.loginData = {};
-    $scope.isExpanded = false;
-    $scope.hasHeaderFabLeft = false;
-    $scope.hasHeaderFabRight = false;
+    $scope.getUsername = function() {
+        return AuthService.getUsername();
+    }
+     
+    $scope.getHost = function() {
+        return AuthService.getHost();
+    }
 
-    var navIcons = document.getElementsByClassName('ion-navicon');
-    for (var i = 0; i < navIcons.length; i++) {
-        navIcons.addEventListener('click', function() {
-            this.classList.toggle('active');
+    $scope.goHome = function() {
+        $state.go('tab.home');
+    }
+
+})
+
+.controller('LoginCtrl', function($scope,$state,DataFactory,AuthService, $ionicPopup,$ionicLoading) {
+
+    var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;
+
+    $scope.login = {
+        username:'',
+        password:''
+    };
+
+    $scope.init = function() {
+        $scope.passcode = "";
+    }
+
+    $scope.add = function(value) {
+        if($scope.passcode.length < 4) {
+            $scope.passcode = $scope.passcode + value;
+            if($scope.passcode.length == 4) {
+                $timeout(function() {
+
+                }, 500);
+            }
+        }
+    }
+
+    $scope.delete = function() {
+        if($scope.passcode.length > 0) {
+            $scope.passcode = $scope.passcode.substring(0, $scope.passcode.length - 1);
+        }
+    }
+ 
+    var goToDashboard = function(){
+        $state.go('tab.home');
+    }
+    
+    $scope.loginUser = function(form) {
+
+    if(form.$valid) {
+        loading();
+        DataFactory.retrieve($scope.login.username)
+        .then(function(patient){
+            if(patient && patient.password && patient.password == $scope.login.password){
+                AuthService.keepLogin(patient.email, patient.password).then(function(){
+                    loaded("Login Successfull",goToDashboard);
+                });
+            }else{
+                loaded("<b>Sorry:</b> Login Details not correct");
+            }
+        });
+    }else{
+        loaded("<b>Sorry;</b> Login Details not correct")
+    }
+    };
+})
+ 
+
+.controller('ProfileCtrl', function($scope, $stateParams, $timeout,AuthService,DataFactory) {
+    $scope.popupData = {};
+    var loading = $scope.loading;
+    var loaded = $scope.loaded;
+    var showAlert = $scope.showAlert;
+    var askAlert = $scope.askAlert;
+
+    $scope.patient = {};
+    loading();
+    AuthService.personLoggedIn()
+    .then(function(patient){
+        $scope.patient = patient;
+        loaded();
+    });
+
+    $scope.reloadPatient = function(){
+        DataFactory.retrieve($scope.patient.email)
+        .then(function(patient){
+            if(patient){
+                $scope.patient = patient;
+                console.log(patient)
+            }
         });
     }
 
-    ////////////////////////////////////////
-    // Layout Methods
-    ////////////////////////////////////////
-
-    $scope.hideNavBar = function() {
-        document.getElementsByTagName('ion-nav-bar')[0].style.display = 'none';
-    };
-
-    $scope.showNavBar = function() {
-        document.getElementsByTagName('ion-nav-bar')[0].style.display = 'block';
-    };
-
-    $scope.noHeader = function() {
-        var content = document.getElementsByTagName('ion-content');
-        for (var i = 0; i < content.length; i++) {
-            if (content[i].classList.contains('has-header')) {
-                content[i].classList.toggle('has-header');
+    $scope.updateWeight = function(){
+        $scope.popupData.weight = 0;
+        askAlert($scope,'Update Body Weight',
+        'Please, measure and enter your body weight (unit is in Kg)',
+        '<input type="number" ng-model="popupData.weight">',
+        function(e){
+            if(!$scope.popupData.weight){
+                e.preventDefault();
+            }else{
+                $scope.patient.weight = $scope.popupData.weight;
+                DataFactory.appendProperty($scope.patient.email,"weight",$scope.patient.weight)
+                .then(function(){$scope.reloadPatient()});                
             }
-        }
-    };
+        });
+    }
 
-    $scope.setExpanded = function(bool) {
-        $scope.isExpanded = bool;
-    };
 
-    $scope.setHeaderFab = function(location) {
-        var hasHeaderFabLeft = false;
-        var hasHeaderFabRight = false;
+    $scope.updateHeight = function(){
+        $scope.popupData.height = 0;
+        askAlert($scope,'Update Body Height',
+        'Please, measure and enter your body height (unit is in metres)',
+        '<input type="number" ng-model="popupData.height">',
+        function(e){
+            if(!$scope.popupData.height){
+                e.preventDefault();
+            }else{
+                $scope.patient.height = $scope.popupData.height;
+                console.log($scope.patient)
+                DataFactory.appendProperty($scope.patient.email,"height",$scope.patient.height)
+                .then(function(){$scope.reloadPatient()})
+                
 
-        switch (location) {
-            case 'left':
-                hasHeaderFabLeft = true;
-                break;
-            case 'right':
-                hasHeaderFabRight = true;
-                break;
-        }
-
-        $scope.hasHeaderFabLeft = hasHeaderFabLeft;
-        $scope.hasHeaderFabRight = hasHeaderFabRight;
-    };
-
-    $scope.hasHeader = function() {
-        var content = document.getElementsByTagName('ion-content');
-        for (var i = 0; i < content.length; i++) {
-            if (!content[i].classList.contains('has-header')) {
-                content[i].classList.toggle('has-header');
             }
-        }
-
-    };
-
-    $scope.hideHeader = function() {
-        $scope.hideNavBar();
-        $scope.noHeader();
-    };
-
-    $scope.showHeader = function() {
-        $scope.showNavBar();
-        $scope.hasHeader();
-    };
-
-    $scope.clearFabs = function() {
-        var fabs = document.getElementsByClassName('button-fab');
-        if (fabs.length && fabs.length > 1) {
-            fabs[0].remove();
-        }
-    };
-})
-
-.controller('LoginCtrl', function($scope, $timeout, $stateParams, ionicMaterialInk) {
-    $scope.$parent.clearFabs();
-    $timeout(function() {
-        $scope.$parent.hideHeader();
-    }, 0);
-    ionicMaterialInk.displayEffect();
-})
-
-.controller('FriendsCtrl', function($scope, $stateParams, $timeout, ionicMaterialInk, ionicMaterialMotion) {
-    // Set Header
-    $scope.$parent.showHeader();
-    $scope.$parent.clearFabs();
-    $scope.$parent.setHeaderFab('left');
-
-    // Delay expansion
-    $timeout(function() {
-        $scope.isExpanded = true;
-        $scope.$parent.setExpanded(true);
-    }, 300);
-
-    // Set Motion
-    ionicMaterialMotion.fadeSlideInRight();
-
-    // Set Ink
-    ionicMaterialInk.displayEffect();
-})
-
-.controller('ProfileCtrl', function($scope, $stateParams, $timeout, ionicMaterialMotion, ionicMaterialInk) {
-    // Set Header
-    $scope.$parent.showHeader();
-    $scope.$parent.clearFabs();
-    $scope.isExpanded = false;
-    $scope.$parent.setExpanded(false);
-    $scope.$parent.setHeaderFab(false);
-
-    // Set Motion
-    $timeout(function() {
-        ionicMaterialMotion.slideUp({
-            selector: '.slide-up'
         });
-    }, 300);
-
-    $timeout(function() {
-        ionicMaterialMotion.fadeSlideInRight({
-            startVelocity: 3000
-        });
-    }, 700);
-
-    // Set Ink
-    ionicMaterialInk.displayEffect();
-})
-
-.controller('ActivityCtrl', function($scope, $stateParams, $timeout, ionicMaterialMotion, ionicMaterialInk) {
-    $scope.$parent.showHeader();
-    $scope.$parent.clearFabs();
-    $scope.isExpanded = true;
-    $scope.$parent.setExpanded(true);
-    $scope.$parent.setHeaderFab('right');
-
-    $timeout(function() {
-        ionicMaterialMotion.fadeSlideIn({
-            selector: '.animate-fade-slide-in .item'
-        });
-    }, 200);
-
-    // Activate ink for controller
-    ionicMaterialInk.displayEffect();
-})
-
-.controller('GalleryCtrl', function($scope, $stateParams, $timeout, ionicMaterialInk, ionicMaterialMotion) {
-    $scope.$parent.showHeader();
-    $scope.$parent.clearFabs();
-    $scope.isExpanded = true;
-    $scope.$parent.setExpanded(true);
-    $scope.$parent.setHeaderFab(false);
-
-    // Activate ink for controller
-    ionicMaterialInk.displayEffect();
-
-    ionicMaterialMotion.pushDown({
-        selector: '.push-down'
-    });
-    ionicMaterialMotion.fadeSlideInRight({
-        selector: '.animate-fade-slide-in .item'
-    });
+    }
 
 });

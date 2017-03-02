@@ -1,31 +1,40 @@
-<ion-content ng-class="{expanded:false}">
-    <div class=" hero slide-up" style="background-image: url('https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS2AG9IexYFunjx0f4BWZyjpeBoGUl9sBc1aMWNwLxSVIZX3tBk');     height: 150px;">
-        <div class="content">
-            <div class="avatar" style="background-image: url('img/arya.jpg');"></div>
-            <h3><a class="light">Blood Glucose</a></h3>
-            <h4>{{dragon_mommy}}</h4>
+<ion-view view-title="Dashboard" ng-controller="DashCtrl">
+  <ion-content class="has-header" ng-class="{expanded:false}">
+      <div class=" hero " style="background-image: url('/img/dashboard_bg.jpg'); height: 150px;">
+          <div class="content">
+              <h2 style=" color: aquamarine; ">Welcome</h2>
+              <h3>{{patient.firstName}} {{patient.lastName}}</h3>
+              <!--div class="avatar" style="background-image: url('img/arya.jpg');"></div-->
+              <h5>Body Mass Index</h5>
+              <h4>{{(patient.weight/(patient.height*patient.height)).toFixed(2)}}kg/m<sup>2</sup></h4>
+          </div>
+      </div>
+     <div class="divst">
+      <div class="item item-divider">
+        Features
+      </div>
+      <div class="item item-icon-left item-divider" >
+        <i class="icon ion-email"></i>
+        <div>
+          <h2> Check Alerts</h2>
+        
         </div>
+         <a href="" ng-click="checkAlerts()"><span style=" margin-right: -28px; " class="badge badge-assertive">{{patient.alerts.length}}</span></a>
+      </div>
+      <div class="item item-icon-left" >
+        <i class="icon ion-speedometer"></i>
+        <div>
+          Blood Pressure
+        <a href="" ng-click="addPressure()"><span class="badge "><i class="icon ion-ios-plus"></i></span></a>
+        </div>
+        
+      </div>
+      <div class="item item-icon-left " >
+        <i class="icon ion-thermometer"></i>
+        Blood Glucose
+        <a href="" ng-click="addGlucose()"><span class="badge "><i class="icon ion-ios-plus"></i></span></a>
+      </div> 
+
     </div>
-   <div class="list">
-    <div class="item item-divider">
-    Features
-  </div>
-    <a class="item item-icon-left" href="#">
-      <i class="icon ion-email"></i>
-      Check Alerts
-       <span class="badge badge-assertive">0</span>
-    </a>
-
-    <a class="item item-icon-left item-icon-right" href="#">
-      <i class="icon ion-speedometer"></i>
-      Blood Pressure
-      <i class="icon  "></i>
-    </a>
-    <a class="item item-icon-left item-icon-right" href="#">
-      <i class="icon ion-thermometer"></i>
-      Blood Glucose
-      <i class="icon "></i>
-    </a>
-
-  </div>
-</ion-content>
+  </ion-content>
+</ion-view>

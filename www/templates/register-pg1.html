@@ -1,20 +1,23 @@
-<ion-view view-title="Registration">
+<ion-view  class="background"  view-title="Registration">
+  <ion-header-bar class="bar bar-header bar-positive">
+      <h1 class="title">User Setup</h1>
+  </ion-header-bar>
   <ion-content ng-class="{expanded:$scope.isExpanded}">
-    <h4 style="text-align: center;">User Details</h4>
+    <h4 style="text-align: center;">Bio Details</h4>
     <div class="list">
       <form name="patientForm" novalidate="" ng-submit="savePage1(patientForm)"> 
           <label class="item item-input item-floating-label" ng-class="{ 'has-errors' : patientForm.firstName.$invalid, 'no-errors' : patientForm.firstName.$valid}">
             <span class="input-label">First Name</span>
             <input name="firstName" type="text" ng-model="patient.firstName" placeholder="First Name"  ng-minlength="3" ng-maxlength="20" required >
           </label>
-          <div class="error-container" ng-show="patientForm.firstName.$error" ng-messages="patientForm.firstName.$error">
+          <div class="error-container" ng-show="patientForm.firstName.$error && patientForm.firstName.$dirty" ng-messages="patientForm.firstName.$error">
               <div ng-messages-include="/templates/error-list.html"></div>
           </div>
           <label class="item item-input item-floating-label" ng-class="{ 'has-errors' : patientForm.lastName.$invalid, 'no-errors' : patientForm.lastName.$valid}">
             <span class="input-label">Last Name</span>
             <input name="lastName" type="text" ng-model="patient.lastName"  placeholder="Last Name" ng-minlength="3" ng-maxlength="20" required>
           </label>
-          <div class="error-container" ng-show="patientForm.lastName.$error" ng-messages="patientForm.lastName.$error">
+          <div class="error-container" ng-show="patientForm.lastName.$error && patientForm.lastName.$dirty" ng-messages="patientForm.lastName.$error">
               <div ng-messages-include="/templates/error-list.html"></div>
           </div>
           <label class="item item-input item-floating-label" ng-class="{ 'has-errors' : patientForm.middleName.$invalid, 'no-errors' : patientForm.middleName.$valid}">
@@ -25,7 +28,7 @@
             <span class="input-label">Email</span>
             <input name="email" type="text" ng-model="patient.email" placeholder="Email" required>
           </label>
-          <div class="error-container" ng-show="patientForm.email.$error" ng-messages="patientForm.email.$error">
+          <div class="error-container" ng-show="patientForm.email.$error && patientForm.email.$dirty" ng-messages="patientForm.email.$error">
               <div ng-messages-include="/templates/error-list.html"></div>
           </div>
           <label class="item item-input item-stacked-label">
@@ -40,16 +43,35 @@
             <input type="date" ng-model="patient.dateOfBirth" placeholder="Date of Birth">
           </label>
           <label class="item item-input item-floating-label">
+            <span class="input-label">Address(Line one)</span>
+            <input type="text" ng-model="patient.lineOne" placeholder="Address(1)">
+          </label>
+          <label class="item item-input item-floating-label">
+            <span class="input-label">Address(Line Two)</span>
+            <input type="text" ng-model="patient.lineTwo" placeholder="Address(2)">
+          </label>
+          <label class="item item-input item-floating-label">
+            <span class="input-label">City</span>
+            <input type="text" ng-model="patient.city" placeholder="City">
+          </label>
+          <label class="item item-input item-stacked-label">
+            <span class="input-label">State</span>
+            <ion-list>
+              <ion-radio ng-model="patient.gender" ng-value="'Lagos'"><b>Lagos</b></ion-radio>
+              <ion-radio ng-model="patient.gender" ng-value="'Ibadan'"><b>Oyo</b></ion-radio>
+            </ion-list>
+          </label>
+          <label class="item item-input item-floating-label">
             <span class="input-label">Profile Picture</span>
-            <input type="file" ng-model="patient.patient.picture" placeholder="Picture">
+            <input type="file" ng-model="patient.picture" placeholder="Picture">
           </label>
           <label class="item item-input item-floating-label">
             <span class="input-label">Weight (Kg)</span>
-            <input type="number" ng-model="patient.weight" placeholder="Weight (Kg)">
+            <input name="weight" type="number" ng-model="patient.weight" placeholder="Weight (Kg)" required>
           </label>
           <label class="item item-input item-floating-label">
             <span class="input-label">Height (metres)</span>
-            <input type="number" ng-model="patient.height" placeholder="Height (metres)">
+            <input name="height" type="number" ng-model="patient.height" placeholder="Height (metres)" required>
           </label>
           <button type="submit" class="button button-full button-positive">
             Next

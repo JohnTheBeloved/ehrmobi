@@ -1,20 +1,24 @@
-<ion-view view-title="Login">
-  <ion-content ng-class="{expanded:$scope.isExpanded}">
+<ion-header-bar align-title="center" class="bar-positive">
+    <h1 class="title">Login</h1>
+  </ion-header-bar>
+<ion-view title="Login" class="background" ng-controller="AppCtrl">
+  
+   <ion-content padding="'true'"  ng-class="{expanded:false}">
     <div class="list">
-      <div class="list">
+      <form name="loginForm" novalidate="" ng-submit="loginUser(loginForm)"> 
         <label class="item item-input item-divider">
-          <input type="email" placeholder="Email">
+          <input name="username" ng-model="login.username" type="text" placeholder="Email" required>
         </label>
         <label class="item item-input item-divider">
-          <input type="number" placeholder="Mobile Number">
+          <input name="password" ng-model="login.password" type="password" placeholder="Password" required>
         </label>
-        <label class="item item-input item-divider">
-          <input type="text" placeholder="Password">
-        </label>
-        <button class="button button-full button-positive">
-          Login
-        </button>
-      </div>
+        <div>
+          <button class="button button-full button-positive">
+            Login
+          </button>
+          <a ng-href="#/auth/register" class="button button-positive button-clear button-block " style="width: 100%; text-transform: capitalize; ">Or create an account</a>
+        </div>
+      </form>
     </div>
   </ion-content>
 </ion-view>
