@@ -1,0 +1,119 @@
+angular.module('starter.services', [])
+
+.factory('DataFactory', function($localForage) {
+
+  var getPatientStub = function(firstName,middleName,lastName,
+    dateOfBirth,gender,email,phone,password)
+  {
+    var patient = {
+      person:{
+        "addresses": [
+          {}
+        ],
+        "names": [
+          {
+            givenName:firstName,
+            familyName:lastName,
+            middleName:middleName
+          }
+        ],
+        "birthdate": dateOfBirth,
+        "gender": gender,
+        "attributes": {
+          email: email,
+          phone:phone,
+          password:password
+        }
+      }
+    }
+    return patient;
+  }
+  
+  return {
+    save: function(key,data) {
+      return $localForage.setItem(key,data);
+    },
+    retrieve: function(key){
+      return $localForage.getItem(key)
+    },
+    getPatientStub:getPatientStub
+  };
+})
+
+.service('MrsService', function($http) {
+     
+    this.call = function(host,endpoint, opts, handle){
+
+        var req = {
+         method: opts['method'],
+         url: host+endpoint,
+         headers: {
+           'Content-Type': 'application/json',
+           'Authorization': 'Basic ' + btoa('john.developer' + ':' + 'Silver1963$')
+         },
+         data: opts['data']
+        }
+        $http(req).then(handle['success'], handle['failure']);
+
+    }
+})
+
+.service('AuthService',function(MrsService,DataFactory){
+     
+    this.initSession = function(){
+        MrsService.call('http://localhost:8080',
+          "/openmrs/ws/rest/v1/session",
+          {method:'GET'},
+          { success:function(response){
+            console.log("Application Authenticated",response);
+            DataFactory.save()
+          },
+            failure:function(response){console.log("Application not authenticated",response)}
+          }
+        );
+    };
+
+    var loggedIn = false;
+
+    function authenticated(){
+      this.loggedIn = true;
+    }
+
+    this.keepLogin = function(username,password){
+        loggedIn = true;
+        return DataFactory.save("loggedIn",{"username":username})
+    }
+
+    this.initAuth = function(){
+      DataFactory.retrieve("loggedIn").then(function(data){
+        if(data){
+          loggedIn = true;
+        }
+      });
+    }
+
+    this.isLoggedIn = function(){
+      return loggedIn;
+    }
+
+})
+
+ 
+.directive("compareTo", function() {
+    return {
+        require: "ngModel",
+        scope: {
+            otherModelValue: "=compareTo"
+        },
+        link: function(scope, element, attributes, ngModel) {
+            
+            ngModel.$validators.compareTo = function(modelValue) {
+                return modelValue === scope.otherModelValue;
+            };
+ 
+            scope.$watch("otherModelValue", function() {
+                ngModel.$validate();
+            });
+        }
+    };
+});

@@ -1,0 +1,287 @@
+angular.module('starter.controllers', [])
+
+.controller('DashCtrl', function($scope) {})
+
+.controller('ChatsCtrl', function($scope, Chats) {
+  // With the new view caching in Ionic, Controllers are only called
+  // when they are recreated or on app start, instead of every page change.
+  // To listen for when this page is active (for example, to refresh data),
+  // listen for the $ionicView.enter event:
+  //
+  //$scope.$on('$ionicView.enter', function(e) {
+  //});
+
+  $scope.chats = Chats.all();
+  $scope.remove = function(chat) {
+    Chats.remove(chat);
+  };
+})
+
+
+.controller('NavCtrl', function($scope,MrsService, $ionicSideMenuDelegate) {
+      $scope.showMenu = function () {
+        $ionicSideMenuDelegate.toggleLeft();
+      };
+})
+
+.controller('ProfileCtrl', function($scope, $stateParams, Chats) {
+  
+})
+
+.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
+  $scope.chat = Chats.get($stateParams.chatId);
+})
+
+.controller('RegisterCtrl', function($scope,$state,$stateParams,DataFactory,AuthService,$ionicPopup,$ionicLoading) {
+  
+    var showAlert = function(message,afterEffect) {
+       
+        if(afterEffect){
+            var alertPopup = $ionicPopup.alert({
+             title: 'Message',
+             template: message
+            }).then(afterEffect);
+        }else{
+            var alertPopup = $ionicPopup.alert({
+             title: 'Message',
+             template: message
+            })
+           return alertPopup;
+        }
+       
+ 
+     };
+
+    var loading = function() {
+        $ionicLoading.show({
+          template: '<p>Please wait...</p><ion-spinner></ion-spinner>'
+        });
+    };
+
+    var loaded  = function(message,thenDoThis){
+        if(message){
+            $ionicLoading.hide(); 
+            showAlert(message);
+            thenDoThis()
+        }else{
+           $ionicLoading.hide(); 
+        }
+        
+    };
+
+    var goToReg2 = function(){
+        $state.go('auth.register2',{email:$scope.patient.email});
+    }
+
+    var goToDashboard = function(){
+        $state.go('tab.dashboard')
+    }
+
+
+
+    var email = $stateParams.email; 
+    if(email){
+        loading();
+        DataFactory.retrieve(email)
+        .then(function(patient){
+            if(patient && patient.email){
+                $scope.patient = patient;
+                loaded();
+            }else{
+                loaded("Error occured retriving saved Data, Please Start again",function(){$state.go('auth.register')})
+            }
+        });
+    }else{
+         $scope.patient = {
+            firstName:'',
+            lastName:'',
+            middleName:'',
+            email:'',
+            gender:'M',
+            dateOfBirth:'',
+            picture:'',
+            weight:'',
+            height:'',
+            password:'',
+            confirmPassword:''
+        }
+    }
+   
+
+  
+    $scope.savePage1 = function(form) {
+        
+        if(form.$valid) {
+            loading();
+            DataFactory.save($scope.patient.email,$scope.patient)
+            .then(function(){
+                loaded('<b>Success</b>: Basic Data Successfully saved',goToReg2);
+            });
+        }else{
+            showAlert("Form Data not Valid, Please review")
+        }
+    };
+
+    $scope.savePage2 = function(form) {
+        
+        if(form.$valid) {
+            loading();
+            DataFactory.save($scope.patient.email,$scope.patient)
+            .then(function(){
+                AuthService.keepLogin().then(function(){
+                    loaded('<b>Success</b>: Basic Registered',goToDashboard);
+                });                
+            });
+        }else{
+            showAlert("Form Data not Valid, Please review")
+        }
+    };
+
+
+})
+
+
+.controller('AppCtrl', function($scope, $ionicModal) {
+    // Form data for the login modal
+    $scope.getUsername = function() {
+        return AuthService.getUsername();
+    }
+     
+    $scope.getHost = function() {
+        return AuthService.getHost();
+    }
+
+    $scope.goHome = function() {
+        $state.go('tab.dashboard');
+    }
+
+})
+
+.controller('LoginCtrl', function($scope,$state,DataFactory,AuthService, $ionicPopup,$ionicLoading) {
+
+    $scope.login = {
+        username:'',
+        password:''
+    }
+
+    var showAlert = function(message,afterEffect) {
+       
+        if(afterEffect){
+            var alertPopup = $ionicPopup.alert({
+             title: 'Message',
+             template: message
+            }).then(afterEffect);
+        }else{
+            var alertPopup = $ionicPopup.alert({
+             title: 'Message',
+             template: message
+            })
+           return alertPopup;
+        }
+       
+ 
+     };
+
+    var loading = function() {
+        $ionicLoading.show({
+          template: '<p>Please wait...</p><ion-spinner></ion-spinner>'
+        });
+    };
+
+    var loaded  = function(message, thenDoThis){
+        if(message){
+            $ionicLoading.hide(); 
+            showAlert(message);
+            if(thenDoThis){
+                thenDoThis();
+            }
+        }else{
+           $ionicLoading.hide(); 
+        }
+    };
+
+    var goToDashboard = function(){
+        $state.go('tab.dashboard');
+    }
+    
+    $scope.loginUser = function(form) {
+
+    if(form.$valid) {
+        loading();
+        DataFactory.retrieve($scope.login.username)
+        .then(function(patient){
+            if(patient && patient.password && patient.password == $scope.login.password){
+                AuthService.keepLogin().then(function(){
+                    loaded("Login Successfull",goToDashboard);
+                });
+            }else{
+                loaded("<b>Sorry:</b> Login Details not correct");
+            }
+        });
+    }else{
+        loaded("<b>Sorry;</b> Login Details not correct")
+    }
+    };
+})
+ 
+
+.controller('ProfileCtrl', function($scope, $stateParams, $timeout, ionicMaterialMotion, ionicMaterialInk) {
+    // Set Header
+    $scope.$parent.showHeader();
+    $scope.$parent.clearFabs();
+    $scope.isExpanded = false;
+    $scope.$parent.setExpanded(false);
+    $scope.$parent.setHeaderFab(false);
+
+    // Set Motion
+    $timeout(function() {
+        ionicMaterialMotion.slideUp({
+            selector: '.slide-up'
+        });
+    }, 300);
+
+    $timeout(function() {
+        ionicMaterialMotion.fadeSlideInRight({
+            startVelocity: 3000
+        });
+    }, 700);
+
+    // Set Ink
+    ionicMaterialInk.displayEffect();
+})
+
+.controller('ActivityCtrl', function($scope, $stateParams, $timeout, ionicMaterialMotion, ionicMaterialInk) {
+    $scope.$parent.showHeader();
+    $scope.$parent.clearFabs();
+    $scope.isExpanded = true;
+    $scope.$parent.setExpanded(true);
+    $scope.$parent.setHeaderFab('right');
+
+    $timeout(function() {
+        ionicMaterialMotion.fadeSlideIn({
+            selector: '.animate-fade-slide-in .item'
+        });
+    }, 200);
+
+    // Activate ink for controller
+    ionicMaterialInk.displayEffect();
+})
+
+.controller('GalleryCtrl', function($scope, $stateParams, $timeout, ionicMaterialInk, ionicMaterialMotion) {
+    $scope.$parent.showHeader();
+    $scope.$parent.clearFabs();
+    $scope.isExpanded = true;
+    $scope.$parent.setExpanded(true);
+    $scope.$parent.setHeaderFab(false);
+
+    // Activate ink for controller
+    ionicMaterialInk.displayEffect();
+
+    ionicMaterialMotion.pushDown({
+        selector: '.push-down'
+    });
+    ionicMaterialMotion.fadeSlideInRight({
+        selector: '.animate-fade-slide-in .item'
+    });
+
+});

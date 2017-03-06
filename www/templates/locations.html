@@ -1,0 +1,22 @@
+<ion-view view-title="Locations">
+  <ion-content ng-class="{expanded:$scope.isExpanded}">
+    <div class="row">
+      <div class="col"> 
+        <div class="list">
+
+          <div>
+            <h4 class="item item-divider">
+               Name :
+            </h4>
+            <div class="item item-button-right" >
+              <h5>OpenMRS Local</h5>
+              <button ng-click="syncData()" class="button button-positive">
+                <i class="icon ion-android-sync"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ion-content>
+</ion-view>
